@@ -66,7 +66,7 @@ export default (Bookshelf, options = {}) => {
 
         const internals = {};
         const { include, fields, sort, page = {}, filter, group } = opts;
-        const filterTypes = ['like', 'not', 'lt', 'gt', 'lte', 'gte', 'notNull', 'isNull'];
+        const filterTypes = ['like', 'not', 'lt', 'gt', 'lte', 'gte', 'notNull', 'isNull', '?'];
 
         // Get a reference to the field being used as the id
         internals.idAttribute = this.constructor.prototype.idAttribute ?
@@ -360,6 +360,11 @@ export default (Bookshelf, options = {}) => {
                                     // Remove all but the last table name, need to get number of dots
                                     typeKey = internals.formatRelation(internals.formatColumnNames([typeKey])[0]);
 
+                                    // If the key contains a function, execute the function
+                                    if (typeKey.includes("(")) {
+                                        typeKey = typeKey.split(".")[1];
+                                    }
+
                                     // Determine if there are multiple filters to be applied
                                     let valueArray = null;
                                     if (!_isArray(typeValue)){
@@ -417,17 +422,20 @@ export default (Bookshelf, options = {}) => {
                                     else if (key === 'not'){
                                         qb.whereNotIn(typeKey, valueArray);
                                     }
-                                    else if (key === 'lt'){
-                                        qb.where(typeKey, '<', typeValue);
+                                    else if (key === "lt") {
+                                        qb.whereRaw(`${typeKey} < ${typeValue}`);
                                     }
-                                    else if (key === 'gt'){
-                                        qb.where(typeKey, '>', typeValue);
+                                    else if (key === "gt") {
+                                        qb.whereRaw(`${typeKey} > ${typeValue}`);
                                     }
-                                    else if (key === 'lte'){
-                                        qb.where(typeKey, '<=', typeValue);
+                                    else if (key === "lte") {
+                                        qb.whereRaw(`${typeKey} <= ${typeValue}`);
                                     }
-                                    else if (key === 'gte'){
-                                        qb.where(typeKey, '>=', typeValue);
+                                    else if (key === "gte") {
+                                        qb.whereRaw(`${typeKey} >= ${typeValue}`);
+                                    }
+                                    else if (key === "?") {
+                                        qb.whereRaw(Bookshelf.knex.raw(`${typeKey} \\?\| array[${typeValue}]`));
                                     }
                                 });
                             }
