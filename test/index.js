@@ -92,13 +92,13 @@ describe('bookshelf-jsonapi-params', () => {
     });
 
 
-    before((done) => {
+    before(() => {
 
         // Register the plugin with Bookshelf
         repository.plugin(JsonApiParams);
 
         // Build the schema and add some data
-        Promise.join(
+        return Promise.join(
             repository.knex.schema.dropTableIfExists('person'),
             repository.knex.schema.dropTableIfExists('pet'),
             repository.knex.schema.dropTableIfExists('toy')
@@ -203,54 +203,43 @@ describe('bookshelf-jsonapi-params', () => {
                         pet_id: 2
                     })
                 );
-            })
-            .then(() => done());
+            });
     });
 
-    after((done) => {
-
+    after(() => {
         // Drop the tables when tests are complete
         Promise.join(
             repository.knex.schema.dropTableIfExists('person'),
             repository.knex.schema.dropTableIfExists('pet'),
             repository.knex.schema.dropTableIfExists('toy')
-        )
-            .then(() => done());
+        );
     });
 
     describe('passing no parameters', () => {
-
-        it('should return a single record', (done) => {
-
+        it('should return a single record', () => {
             return PersonModel
                 .where({ id: 1 })
                 .fetchJsonApi(null, false)
                 .then((person) => {
-
                     expect(person.get('firstName')).to.equal('Barney');
                     expect(person.get('gender')).to.equal('m');
-                    done();
                 });
         });
 
-        it('should return multiple records', (done) => {
-
+        it('should return multiple records', () => {
             return PersonModel
                 .forge()
                 .fetchJsonApi()
                 .then((result) => {
-
                     expect(result.models).to.have.length(5);
-                    done();
                 });
         });
     });
 
     describe('passing a `fields` parameter', () => {
 
-        it('should only return the specified field for the record', (done) => {
-
-            PersonModel
+        it('should only return the specified field for the record', () => {
+            return PersonModel
                 .where({ id: 2 })
                 .fetchJsonApi({
                     fields: {
@@ -258,19 +247,15 @@ describe('bookshelf-jsonapi-params', () => {
                     }
                 }, false)
                 .then((person) => {
-
                     expect(person.get('firstName')).to.equal('Baby Bop');
                     expect(person.get('gender')).to.be.undefined;
-                    done();
                 });
         });
     });
 
     describe('passing a `filters` parameter with a single filter', () => {
-
-        it('should return a single record with the matching id', (done) => {
-
-            PersonModel
+        it('should return a single record with the matching id', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     filter: {
@@ -278,15 +263,12 @@ describe('bookshelf-jsonapi-params', () => {
                     }
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(1);
-                    done();
                 });
         });
 
-        it('should return a single record with the matching type as null', (done) => {
-
-            PersonModel
+        it('should return a single record with the matching type as null', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     filter: {
@@ -294,19 +276,15 @@ describe('bookshelf-jsonapi-params', () => {
                     }
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(1);
                     expect(result.models[0].get('firstName')).to.equal('Elmo');
-                    done();
                 });
         });
     });
 
     describe('passing a `filters` parameter with multiple filters', () => {
-
-        it('should return a single record that matches both filters', (done) => {
-
-            PersonModel
+        it('should return a single record that matches both filters', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     filter: {
@@ -314,15 +292,12 @@ describe('bookshelf-jsonapi-params', () => {
                     }
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(2);
-                    done();
                 });
         });
 
-        it('should return a single record that matches both filters with a null', (done) => {
-
-            PersonModel
+        it('should return a single record that matches both filters with a null', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     filter: {
@@ -330,18 +305,14 @@ describe('bookshelf-jsonapi-params', () => {
                     }
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(2);
-                    done();
                 });
         });
     });
 
     describe('passing a `filter[like]` parameter with a single filter', () => {
-
-        it('should return all records that partially matches filter[like]', (done) => {
-
-            PersonModel
+        it('should return all records that partially matches filter[like]', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     filter: {
@@ -351,20 +322,16 @@ describe('bookshelf-jsonapi-params', () => {
                     }
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(2);
                     expect(result.models[0].get('firstName')).to.equal('Barney');
                     expect(result.models[1].get('firstName')).to.equal('Baby Bop');
-                    done();
                 });
         });
     });
 
     describe('passing a `filter[like]` parameter with multiple filters', () => {
-
-        it('should return all records that partially matches both filter[like]', (done) => {
-
-            PersonModel
+        it('should return all records that partially matches both filter[like]', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     filter: {
@@ -374,20 +341,16 @@ describe('bookshelf-jsonapi-params', () => {
                     }
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(2);
                     expect(result.models[0].get('firstName')).to.equal('Baby Bop');
                     expect(result.models[1].get('firstName')).to.equal('Cookie Monster');
-                    done();
                 });
         });
     });
 
     describe('passing a `filter[not]` parameter with a single filter', () => {
-
-        it('should return all records that do not match filter[not]', (done) => {
-
-            PersonModel
+        it('should return all records that do not match filter[not]', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     filter: {
@@ -397,19 +360,16 @@ describe('bookshelf-jsonapi-params', () => {
                     }
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(4);
                     expect(result.models[0].get('firstName')).to.equal('Baby Bop');
                     expect(result.models[1].get('firstName')).to.equal('Cookie Monster');
                     expect(result.models[2].get('firstName')).to.equal('Boo');
                     expect(result.models[3].get('firstName')).to.equal('Elmo');
-                    done();
                 });
         });
 
-        it('should return all records that do not match filter[not] with null', (done) => {
-
-            PersonModel
+        it('should return all records that do not match filter[not] with null', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     filter: {
@@ -424,13 +384,11 @@ describe('bookshelf-jsonapi-params', () => {
                     expect(result.models[1].get('type')).to.equal('triceratops');
                     expect(result.models[2].get('type')).to.equal('monster');
                     expect(result.models[3].get('type')).to.equal('nothing, here');
-                    done();
                 });
         });
 
-        it('should return all records that do not match filter[not] with null as a string', (done) => {
-
-            PersonModel
+        it('should return all records that do not match filter[not] with null as a string', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     filter: {
@@ -445,16 +403,14 @@ describe('bookshelf-jsonapi-params', () => {
                     expect(result.models[1].get('type')).to.equal('triceratops');
                     expect(result.models[2].get('type')).to.equal('monster');
                     expect(result.models[3].get('type')).to.equal('nothing, here');
-                    done();
                 });
         });
     });
 
     describe('passing a `filter[not]` parameter with multiple filters', () => {
 
-        it('should return all records that do not match filter[not]', (done) => {
-
-            PersonModel
+        it('should return all records that do not match filter[not]', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     filter: {
@@ -464,16 +420,13 @@ describe('bookshelf-jsonapi-params', () => {
                     }
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(1);
                     expect(result.models[0].get('firstName')).to.equal('Cookie Monster');
-                    done();
                 });
         });
 
-        it('should return all records that do not match filter[not] including null', (done) => {
-
-            PersonModel
+        it('should return all records that do not match filter[not] including null', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     filter: {
@@ -487,16 +440,13 @@ describe('bookshelf-jsonapi-params', () => {
                     expect(result.models[0].get('type')).to.equal('triceratops');
                     expect(result.models[1].get('type')).to.equal('monster');
                     expect(result.models[2].get('type')).to.equal('nothing, here');
-                    done();
                 });
         });
     });
 
     describe('passing a `filter[lt]` parameter', () => {
-
-        it('should return all records that are less than filter[lt]', (done) => {
-
-            PersonModel
+        it('should return all records that are less than filter[lt]', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     filter: {
@@ -506,20 +456,16 @@ describe('bookshelf-jsonapi-params', () => {
                     }
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(2);
                     expect(result.models[0].get('firstName')).to.equal('Barney');
                     expect(result.models[1].get('firstName')).to.equal('Elmo');
-                    done();
                 });
         });
     });
 
     describe('passing a `filter[lte]` parameter', () => {
-
-        it('should return all records that are less than or equal to filter[lte]', (done) => {
-
-            PersonModel
+        it('should return all records that are less than or equal to filter[lte]', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     filter: {
@@ -529,21 +475,17 @@ describe('bookshelf-jsonapi-params', () => {
                     }
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(3);
                     expect(result.models[0].get('firstName')).to.equal('Barney');
                     expect(result.models[1].get('firstName')).to.equal('Baby Bop');
                     expect(result.models[2].get('firstName')).to.equal('Elmo');
-                    done();
                 });
         });
     });
 
     describe('passing a `filter[gt]` parameter', () => {
-
-        it('should return all records that are greater than filter[gt]', (done) => {
-
-            PersonModel
+        it('should return all records that are greater than filter[gt]', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     filter: {
@@ -553,20 +495,16 @@ describe('bookshelf-jsonapi-params', () => {
                     }
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(2);
                     expect(result.models[0].get('firstName')).to.equal('Cookie Monster');
                     expect(result.models[1].get('firstName')).to.equal('Boo');
-                    done();
                 });
         });
     });
 
     describe('passing a `filter[gte]` parameter', () => {
-
-        it('should return all records that are greater than or equal to filter[gte]', (done) => {
-
-            PersonModel
+        it('should return all records that are greater than or equal to filter[gte]', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     filter: {
@@ -576,21 +514,17 @@ describe('bookshelf-jsonapi-params', () => {
                     }
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(3);
                     expect(result.models[0].get('firstName')).to.equal('Baby Bop');
                     expect(result.models[1].get('firstName')).to.equal('Cookie Monster');
                     expect(result.models[2].get('firstName')).to.equal('Boo');
-                    done();
                 });
         });
     });
 
     describe('passing a `filter[gte]` and `filter[like]` parameter', () => {
-
-        it('should return all records that are greater than or equal to filter[gte] and a partial match to filter[like]', (done) => {
-
-            PersonModel
+        it('should return all records that are greater than or equal to filter[gte] and a partial match to filter[like]', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     filter: {
@@ -603,20 +537,16 @@ describe('bookshelf-jsonapi-params', () => {
                     }
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(1);
                     expect(result.models[0].get('firstName')).to.equal('Baby Bop');
-                    done();
                 });
         });
     });
 
 
     describe('passing a `filter` parameter for relationships', () => {
-
-        it('should return all records that have a pet with name', (done) => {
-
-            PersonModel
+        it('should return all records that have a pet with name', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     filter: {
@@ -624,16 +554,13 @@ describe('bookshelf-jsonapi-params', () => {
                     }
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(1);
                     expect(result.models[0].get('firstName')).to.equal('Barney');
-                    done();
                 });
         });
 
-        it('should return the person named Cookie Monster', (done) => {
-
-            PersonModel
+        it('should return the person named Cookie Monster', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     filter: {
@@ -642,117 +569,94 @@ describe('bookshelf-jsonapi-params', () => {
                     }
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(1);
                     expect(result.models[0].get('firstName')).to.equal('Cookie Monster');
-                    done();
                 });
         });
     });
 
     describe('passing a `sort` parameter', () => {
-
-        it('should return records sorted by type ascending (single word param name)', (done) => {
-
-            PersonModel
+        it('should return records sorted by type ascending (single word param name)', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     sort: ['type']
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(5);
                     expect(result.models[0].get('type')).to.equal(null);
                     expect(result.models[1].get('type')).to.equal('monster');
-                    done();
                 });
         });
 
-        it('should return records sorted by type descending (single word param name)', (done) => {
-
-            PersonModel
+        it('should return records sorted by type descending (single word param name)', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     sort: ['-type']
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(5);
                     expect(result.models[0].get('type')).to.equal('triceratops');
-                    done();
                 });
         });
 
-        it('should return records sorted by name ascending (multi-word param name)', (done) => {
-
-            PersonModel
+        it('should return records sorted by name ascending (multi-word param name)', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     sort: ['firstName']
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(5);
                     expect(result.models[0].get('firstName')).to.equal('Baby Bop');
-                    done();
                 });
         });
 
-        it('should return records sorted by name descending (multi-word param name)', (done) => {
-
-            PersonModel
+        it('should return records sorted by name descending (multi-word param name)', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     sort: ['-firstName']
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(5);
                     expect(result.models[0].get('firstName')).to.equal('Elmo');
-                    done();
                 });
         });
 
-        it('should sort on deeply nested resources', (done) => {
-
-            PersonModel
+        it('should sort on deeply nested resources', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     include: ['pets', 'pets.toy'],
                     sort: ['-pets.toy.type']
                 })
                 .then((result) => {
-
                     expect(result.models[0].related('pets').related('toy').get('type')).to.equal('skate');
                     expect(result.models[1].related('pets').related('toy').get('type')).to.equal('car');
-                    done();
                 });
         });
     });
 
     describe('passing an `include` parameter', () => {
-
-        it('should include the pets relationship', (done) => {
-
-            PersonModel
+        it('should include the pets relationship', () => {
+            return PersonModel
                 .where({ id: 1 })
                 .fetchJsonApi({
                     include: ['pets']
                 }, false)
                 .then((result) => {
-
                     const relation = result.related('pets');
 
                     expect(result).to.be.an('object');
                     expect(relation).to.exist;
                     expect(relation.get('name')).to.equal('Big Bird');
-                    done();
                 });
         });
 
-        it('should include the pets relationship when `include` is a Knex function', (done) => {
-
-            PersonModel
+        it('should include the pets relationship when `include` is a Knex function', () => {
+            return PersonModel
                 .where({ id: 1 })
                 .fetchJsonApi({
                     include: [{
@@ -763,21 +667,16 @@ describe('bookshelf-jsonapi-params', () => {
                     }]
                 }, false)
                 .then((result) => {
-
                     const relation = result.related('pets');
-
                     expect(result).to.be.an('object');
                     expect(relation.id).to.not.exist;
-                    done();
                 });
         });
     });
 
     describe('escape commas in filter', () => {
-
-        it('should escape the comma and find a result', (done) => {
-
-            PersonModel
+        it('should escape the comma and find a result', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     filter: {
@@ -785,16 +684,13 @@ describe('bookshelf-jsonapi-params', () => {
                     }
                 }, false)
                 .then((result) => {
-
                     expect(result).to.be.an('object');
                     expect(result.get('firstName')).to.equal('Boo');
-                    done();
                 });
         });
 
-        it('should find no results if comma is not escaped', (done) => {
-
-            PersonModel
+        it('should find no results if comma is not escaped', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     filter: {
@@ -802,18 +698,14 @@ describe('bookshelf-jsonapi-params', () => {
                     }
                 }, false)
                 .then((result) => {
-
                     expect(result).to.equal(null);
-                    done();
                 });
         });
     });
 
     describe('like filtering on non-text fields', () => {
-
-        it('should return the should return all record that have an age that contains the digit "2"', (done) => {
-
-            PersonModel
+        it('should return the should return all record that have an age that contains the digit "2"', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     filter: {
@@ -827,16 +719,13 @@ describe('bookshelf-jsonapi-params', () => {
                     expect(result.models[0].get('firstName')).to.equal('Barney');
                     expect(result.models[1].get('firstName')).to.equal('Baby Bop');
                     expect(result.models[2].get('firstName')).to.equal('Boo');
-                    done();
                 });
         });
     });
 
     describe('passing a `fields` parameter with an aggregate function', () => {
-
-        it('should return the total count of records', (done) => {
-
-            PersonModel
+        it('should return the total count of records', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     fields: {
@@ -844,16 +733,13 @@ describe('bookshelf-jsonapi-params', () => {
                     }
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(1);
                     expect(result.models[0].get('count')).to.equal(5);
-                    done();
                 });
         });
 
-        it('should return the average age per gender', (done) => {
-
-            PersonModel
+        it('should return the average age per gender', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     fields: {
@@ -862,19 +748,16 @@ describe('bookshelf-jsonapi-params', () => {
                     group: ['gender']
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(2);
                     expect(result.models[0].get('gender')).to.equal('f');
                     expect(result.models[0].get('avg')).to.equal((25 + 28) / 2);
                     expect(result.models[1].get('gender')).to.equal('m');
                     expect(result.models[1].get('avg')).to.equal((12 + 70 + 3) / 3);
-                    done();
                 });
         });
 
-        it('should return the sum of the ages of persons with firstName containing \'Ba\'', (done) => {
-
-            PersonModel
+        it('should return the sum of the ages of persons with firstName containing \'Ba\'', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     filter: {
@@ -887,54 +770,42 @@ describe('bookshelf-jsonapi-params', () => {
                     }
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(1);
                     expect(result.models[0].get('sum')).to.equal(37);
-                    done();
                 });
         });
     });
 
     describe('passing in an additional query', () => {
-
-        it('should return the total count of records', (done) => {
-
-            PersonModel
+        it('should return the total count of records', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({}, undefined, undefined, (qb) => {
-
                     qb.count('id');
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(1);
                     expect(result.models[0].get('countId')).to.equal(5);
-                    done();
                 });
         });
 
-        it('should return the average age per gender', (done) => {
-
-            PersonModel
+        it('should return the average age per gender', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({}, undefined, undefined, (qb) => {
-
                     qb.groupBy('gender').select('gender').avg('age');
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(2);
                     expect(result.models[0].get('gender')).to.equal('f');
                     expect(result.models[0].get('avgAge')).to.equal((25 + 28) / 2);
                     expect(result.models[1].get('gender')).to.equal('m');
                     expect(result.models[1].get('avgAge')).to.equal((12 + 70 + 3) / 3);
-                    done();
                 });
         });
 
-        it('should return the sum of the ages of persons with firstName containing \'Ba\'', (done) => {
-
-            PersonModel
+        it('should return the sum of the ages of persons with firstName containing \'Ba\'', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi({
                     filter: {
@@ -943,23 +814,18 @@ describe('bookshelf-jsonapi-params', () => {
                         }
                     }
                 }, undefined, undefined, (qb) => {
-
                     qb.sum('age');
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(1);
                     expect(result.models[0].get('sumAge')).to.equal(37);
-                    done();
                 });
         });
     });
 
     describe('Filtering by string values which contain quotes', () => {
-
-        it('should maintain quotes when it builds the filter', (done) => {
-
-            PetModel
+        it('should maintain quotes when it builds the filter', () => {
+            return PetModel
                 .forge()
                 .fetchJsonApi({
                     filter: {
@@ -967,9 +833,7 @@ describe('bookshelf-jsonapi-params', () => {
                     }
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(1);
-                    done();
                 });
         });
     });
@@ -977,48 +841,37 @@ describe('bookshelf-jsonapi-params', () => {
 
 
     describe('Sorting by multiple columns with a mix of camelCase values', () => {
-
-        it('should generate valid SQL', (done) => {
-
-            PetModel
+        it('should generate valid SQL', () => {
+            return PetModel
                 .forge()
                 .fetchJsonApi({
                     sort: ['-petOwner.age', 'name']
                 })
                 .then((result) => {
-
                     expect(result.models).to.have.length(5);
                     expect(result.models[3].get('name')).to.equal('Big Bird');
                     expect(result.models[4].get('name')).to.equal('Grover');
-                    done();
                 });
         });
     });
 
 
     describe('passing default paging parameters to the plugin', () => {
-
-        before((done) => {
-
+        before(() => {
             repository.plugin(JsonApiParams, {
                 pagination: { limit: 1, offset: 0 }
             });
-            done();
         });
 
-        it('should properly paginate records', (done) => {
-
-            PersonModel
+        it('should properly paginate records', () => {
+            return PersonModel
                 .forge()
                 .fetchJsonApi()
                 .then((result) => {
-
                     expect(result.models).to.have.length(1);
                     expect(result.models[0].get('id')).to.equal(1);
                     expect(result.pagination.pageCount).to.equal(5);
-                    done();
                 });
         });
     });
-
 });
